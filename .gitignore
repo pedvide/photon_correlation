@@ -53,3 +53,7 @@ __pycache__
 *.ptu
 photon_correlation.7z
 *.tt2
+
+old/
+FCS-correlation.exe
+arguments.txt
