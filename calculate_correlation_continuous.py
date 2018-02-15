@@ -88,10 +88,10 @@ def produce_photons(data_file, header):
 
 #@profile
 def process_photons(produce_photons, bin_width, hist_len, plot_update_rate):
-    temp_norm_hist = hist = np.zeros((hist_len, ))
+    hist = np.zeros((hist_len, ))
     max_delta_t = bin_width*hist_len/2  # in s, maximum time difference to calculate correlation
 
-    last_update_time = 0
+    last_update_time = plot_update_rate
     current_time = 0
 
     # double ended-queue: fast access to the first and last elements
@@ -118,20 +118,21 @@ def process_photons(produce_photons, bin_width, hist_len, plot_update_rate):
             # plot current histogram and exponential decay fit
             if current_time - last_update_time >= plot_update_rate and np.any(hist>0):
                 last_update_time = current_time
-                norm_factor = synccnt * inputcnt / current_time * bin_width
-                temp_norm_hist =  hist/norm_factor
-                yield temp_norm_hist, current_time, synccnt, inputcnt
+                yield hist, current_time, synccnt, inputcnt
 
-    norm_factor = synccnt * inputcnt / current_time * bin_width
-    temp_norm_hist =  hist/norm_factor
-    yield temp_norm_hist, current_time, synccnt, inputcnt
-
+    yield hist, current_time, synccnt, inputcnt
 
 def calculate_correlation(data_file, header, bin_width, hist_len,
-                          plot_update_rate=100):
+                          plot_update_rate=100,
+                          start_time=0, end_time=float('inf')):
+    if not start_time:
+        start_time = 0
+    if not end_time:
+        end_time = float('inf')
+
     get_photons = produce_photons(data_file, header)
 
     for updated_hist in process_photons(get_photons, bin_width, hist_len, plot_update_rate):
         temp_hist, current_time, synccnt, inputcnt = updated_hist
 
-        yield (temp_hist, current_time, synccnt, inputcnt)
+        yield temp_hist, current_time, synccnt, inputcnt
