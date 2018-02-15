@@ -90,11 +90,11 @@ def iterate_header(data_file):
             if tag_pos_array == 0:  # first array element
                 tag_lists[tag_id] = []
             tag_lists[tag_id].append(tag_value)
-            yield (tag_id, tag_lists[tag_id], data_file.tell())
+            yield tag_id, tag_lists[tag_id]
         else:
-            yield (tag_id, tag_value, data_file.tell())
+            yield tag_id, tag_value
 
-    yield ('end_header_pos', data_file.tell(), data_file.tell())
+    yield 'end_header_pos', data_file.tell()
 
 def parse_header(filename):
     logger = logging.getLogger('correlation.ptu_parser')
@@ -102,7 +102,7 @@ def parse_header(filename):
     rtTimeHarp260PT2 = int('00010206', 16)
 
     with open(filename, 'rb') as data_file:
-        header = {tag_id: tag_value for tag_id, tag_value, _ in iterate_header(data_file)}
+        header = {tag_id: tag_value for tag_id, tag_value in iterate_header(data_file)}
 
     if header['TTResultFormat_TTTRRecType'] != rtTimeHarp260PT2:
         msg = 'File was not measured on a TimeHarp 260 Pico'
@@ -111,7 +111,7 @@ def parse_header(filename):
     return header
 
 def get_from_header(file, key):
-    for tag_id, tag_value, _ in iterate_header(file):
+    for tag_id, tag_value in iterate_header(file):
         if tag_id == key:
             return tag_value
 
