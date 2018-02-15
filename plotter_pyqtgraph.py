@@ -120,7 +120,7 @@ class Plotter:
 
         self.ax_histo.setLabel('bottom', text=fr'Delay &tau; ({unit}s)')
         self.ax_histo.setLabel('left', text='Correlation g<sup>(2)</sup>')
-        self.ax_histo.setTitle('Correlation histogram, bin width = ' + get_SI_repr(self.bin_width, separator=''))
+        self.ax_histo.setTitle('Correlation histogram, bin width = ' + get_SI_repr(self.bin_width, separator='') + 's')
         #self.ax_histo.ticklabel_format(style='sci', axis='x', scilimits=(-3,3), useMathText=True, useOffset=False)
         self.plot_data = self.ax_histo.plot(hist_time, np.ones_like(hist_time),
                                             pen=DATA_LINESTYLE, symbolPen=None,
