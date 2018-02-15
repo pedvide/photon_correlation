@@ -26,12 +26,12 @@ from calculate_correlation_continuous_cython import calculate_correlation
 #from calculate_correlation_continuous import calculate_correlation
 
 #### CHANGE THIS ####
-bin_width = 0.25e-9  # in seconds
+bin_width = 0.5e-9  # in seconds
 hist_len = 201  # bins
 # help the fit by providing an approximate lifetime
-expected_tau = 2e-9 # in seconds
+expected_tau = 13e-9 # in seconds
 
-filename = r"..\data\CdSe_CdS\Pradip samples\CdSe_2.7nm_CdS_3ML_Exc335nm_LP460nm_001.ptu"
+filename = r"..\data\CdSe_CdS\Pradip samples\CdSe_2.7nm_CdS_3ML_hexane_Exc180nm_LP460nm_001.ptu"
 #filename = r"..\data\Pr references\1Pr_NaLaF4_overnight_switched_PMT_position_switched_HV_supply_no_lamp.ptu"
 # if series = False, only the filename will be analyzed
 # if series = True, a series of files with names filename_NNN.ptu will be analyzed
@@ -144,14 +144,15 @@ if __name__=='__main__':
         # prepare reading data file
         with open(file, "rb") as data_file:
             # calculate correlation
-            for (temp_hist, current_time,
+            for (hist, current_time,
                  new_synccnt, new_inputcnt) in calculate_correlation(data_file, header,
                                                                      bin_width, hist_len,
-                                                                     plot_update_rate=PLOT_UPDATE_RATE):
+                                                                     plot_update_rate=PLOT_UPDATE_RATE,
+                                                                     start_time=0, end_time=2.5e5):
                 total_time = current_time + last_time
                 pbar.update(int(total_time - pbar.n))
 
-                hist = temp_hist + last_hist
+                hist = hist + last_hist
                 synccnt = new_synccnt + last_synccnt
                 inputcnt = new_inputcnt + last_inputcnt
                 norm_factor = synccnt * inputcnt / total_time * bin_width
@@ -205,7 +206,8 @@ if __name__=='__main__':
     logger.info("Ratio SYNC/INPUT: {:.1f}.".format(synccnt/inputcnt))
     logger.info("Signal amplitude: {:.3g}\u00B1{:.2g}.".format(signal_amplitude, signal_amplitude_std))
     logger.info("Signal decay lifetime: {:.3g}\u00B1{:.1g} s.".format(signal_decay_tau, signal_decay_tau_std))
-    logger.info("Background mean residual\u00B1noise: {:.2g}\u00B1{:.2g}.".format(background_mean-1, noise_amp))
+    logger.info("Noise level (std): {:.2g}.".format(noise_amp))
+    logger.info("Background mean residual: {:.2g}\u00B1{:.2g}.".format(background_mean-1, noise_amp))
     logger.info("Noise fit parameter: {:.3g}\u00B1{:.2g}.".format(noise_A, noise_A_std))
     if len(decay_params) > 2:
         logger.info("Signal fit time offset: {:.3g}\u00B1{:.3g} s.".format(signal_time_offset, signal_time_offset_std))
