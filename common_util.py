@@ -18,6 +18,7 @@ def exp_decay_sigma(cov, t, A, tau, *others):
     left_side = lambda t: np.exp(t/tau)*np.sqrt(cov[0,0] + (cov[0,1]+ cov[1,0])*A*t + cov[1,1]*A**2*t**2)
     return np.piecewise(t, [t>=0, t<0], [lambda t: 0, left_side])
 
+
 def symmetric_decay(t, A, tau, t0, *others):
     return 1 + A*np.exp(-np.abs(t-t0)/tau)**2
 
@@ -35,9 +36,10 @@ def symmetric_decay_sigma(cov, t, A, tau, t0, *others):
 def noise_amp_fun(t, A):
     return A*t**(-0.5)
 
+
 def get_signal_and_noise_from_hist(norm_hist, hist_time, fit_function_name='symmetric',
                                    expected_tau=None, expected_time_offset=None):
-    '''Fits the folded histogram to a exponential decay.
+    '''Fits the histogram to a exponential decay.
     Returns the decay parameters and std, the background mean, and noise.'''
     fit_function = globals()[fit_function_name + '_decay']
 
@@ -56,7 +58,7 @@ def get_signal_and_noise_from_hist(norm_hist, hist_time, fit_function_name='symm
         if expected_time_offset:
             t0_range = (signal_time[hist_len*25//100], signal_time[hist_len*75//100])
         else:
-            expected_time_offset = signal_time[np.argmax(signal_data[hist_len*25//100, hist_len*75//100])]
+            expected_time_offset = signal_time[hist_len*25//100+np.argmax(signal_data[hist_len*25//100:hist_len*75//100])]
             t0_range = (signal_time[hist_len*25//100], signal_time[hist_len*75//100])
         # initial estimate of tau
         if expected_tau:
@@ -83,6 +85,9 @@ def get_signal_and_noise_from_hist(norm_hist, hist_time, fit_function_name='symm
             decay_cov = np.zeros((num_params, num_params))
             background_mean = 0
             noise = 0
+        except ValueError as exc:
+            raise ValueError('The value of expected_tau or expected_time_offset are not possible, '
+                             'given the bin_width and hist_len.') from exc
 
     return decay_params, decay_cov, background_mean, noise
 
